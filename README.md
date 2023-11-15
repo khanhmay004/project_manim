@@ -1,5 +1,5 @@
 # Linear Regression Group 6
-
+Link video: https://bit.ly/49zmbFg
 In the realm of mathematical animation, few tools possess the capability to seamlessly blend elegance with mathematical precision as effectively as Manim — the Mathematical Animation Engine. Developed primarily by Grant Sanderson of 3Blue1Brown, Manim has emerged as a powerful open-source library that transforms the way we visualize and communicate mathematical concepts. This essay explores the intersection of Manim's prowess and the fundamental principles of linear regression, delving into how this animation engine breathes life into abstract mathematical constructs.
 
 Linear regression, a cornerstone of statistical modeling, forms the bedrock of predictive analytics and data science. This technique, rooted in the principles of mathematics and statistics, endeavors to establish a linear relationship between a dependent variable and one or more independent variables. In the pursuit of illuminating this statistical cornerstone, we embark on a journey through the nuances of linear regression, seeking to demystify its algorithms and logic. Through the lens of Manim, linear regression transcends the confines of static representations, allowing learners and educators alike to witness the dance of data points, the convergence of slopes, and the vivid story painted by regression lines.
