@@ -1,12 +1,88 @@
 from sympy import symbols, Function, Sum, lambdify, diff
 import pandas as pd
 from math import sqrt
-
 from manim import *
+from manim.mobject.geometry.tips import ArrowSquareTip
 from sklearn.linear_model import LinearRegression
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import mean_squared_error
 from sklearn import datasets, linear_model
+
+#Linh
+class OpeningText(Scene):
+    def construct(self):
+      """Phần này của mình là làm tiêu đề dẫn vào bài thì mình cần ghi tiêu đề gì thì mình cho vào Text("")
+      xong đặt từng phần ra thành từng biến riêng với tên theo thứ tự. Mình ghi hết ra rồi mới cho chạy animation.
+       """
+
+      intro_words = Text("Visualizing Linear Regression").set_color_by_gradient(BLUE,GREEN)# tạo tiêu đề bài làm
+      content1 = Text("1. Linear Regression model")
+      content2 = Text("2. Loss Function")
+      content3 = Text("3. Training/ Testing Process")
+      content4 = Text("4. Solve An Appilcation Example")
+      content5 = Text("5. Other Applications")
+      self.play(Write(intro_words.scale(1)))
+      self.wait(2)
+
+      self.play(intro_words.animate.to_edge(UP))
+      self.wait(2)
+
+      self.play(Create(content1.scale(0.6).to_edge(UL, buff= 1.75)))
+      self.wait(2)
+
+      self.play(Create(content2.scale(0.6).to_edge(UL, buff= 2.75).shift(LEFT*1)))
+      self.wait(2)
+
+      self.play(Create(content3.scale(0.6).to_edge(UL, buff = 3.75).shift(LEFT*2)))
+      self.wait(2)
+
+      self.play(Create(content4.scale(0.6).to_edge(DL, buff = 2.95).shift(LEFT*1.25)))
+      self.wait(2)
+
+      self.play(Create(content5.scale(0.6).to_edge(DL, buff = 2).shift(LEFT*0.25)))
+      self.wait(2)
+
+class Leading(Scene):
+    def construct(self):
+    """"Phần này cũng như phần trên mình cần chiếu ra cái gì thì mình tạo ra hết xong chiếu 1 thể sau. """
+
+      text = Text("""The need of optimization tools arises from varied situations.""").scale(0.6).set_color(BLUE)
+      assume1 = Paragraph("Here is one example: How do you define an optimal price to\nsell your house?").scale(0.6).set_color(BLUE).to_edge(UP,buff =1 )
+      assume2 = Text("Because of many limits, we will only evaluate the price based on\nthe area of the property").scale(0.6).set_color(BLUE).to_edge(UP,buff = 1)
+
+      datatable = Table([["40","160.45"],["53","163.54"],["58","164.77"],["64","182.42"],["72","212.69"],["...","..."]], col_labels=[Text("Area"), Text("Million VND")]).scale(0.5)
+
+      rec1 = Rectangle(width = 3.5, height = 2.0).to_edge(DOWN).set_color(YELLOW)# làm thân nhà
+
+      roof1 = Triangle().scale(0.66)# tạo 2 tam giác để tý ghép union với 1 hình chữ nhật thành hình mái nhà
+      roof2 = Triangle().scale(0.66)
+      rec2 = Rectangle(width = 4.0, height = 1)
+      roof1.move_to([-1,1,1])# mình phải di chuyển sao cho các hình lồng vào nhau tạo thành hình mong muốn
+      roof2.move_to([3,1,4])
+      rec2.move_to([1,1,3])
+      roof = Union(roof1,rec2,roof2,color= RED).shift(LEFT*1).to_edge(DOWN, buff = 2.5)# union để ghép tất cả các mảnh thành hình mái nhà
+
+      arrow1 = Arrow(start = LEFT, end = RIGHT).set_color(WHITE)
+
+      self.play(Create(text),run_time=2)
+      self.wait(1)
+      self.play(text.animate.to_edge(UP,buff=1))
+      self.wait(2)
+      self.play(Create(VGroup(rec1,roof)))
+      self.wait()
+      self.play(VGroup(rec1,roof).animate.to_edge(LEFT*1.75))
+      self.wait()
+      self.remove(text)
+      self.wait()
+      self.play(Create(assume1, run_time= 2))
+      self.wait(2)
+      self.remove(assume1)
+      self.play(Create(assume2, run_time=2))
+      self.wait(2)
+      self.play(Create(arrow1.to_edge(UP, buff = 2)))
+      self.wait()
+      self.play(Write(datatable.to_edge(UP, buff = 2).shift(RIGHT*2.75), run_time = 3))
+      self.wait(2)
 
 #Ngọc 
 class LinearRegressionLoss3D(ThreeDScene):
