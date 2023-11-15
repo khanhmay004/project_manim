@@ -1,1 +1,1 @@
-# project_manim
+# Linear Regression Group 6
