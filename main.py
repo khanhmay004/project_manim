@@ -8,6 +8,118 @@ from sklearn.model_selection import train_test_split
 from sklearn.metrics import mean_squared_error
 from sklearn import datasets, linear_model
 
+#Ngọc 
+
+class LinearRegressionLoss3D(ThreeDScene):
+    def construct(self):
+
+        self.set_camera_orientation(phi=70 * DEGREES, theta=-30 * DEGREES)
+        #set góc cam cho hình 3D
+
+        loss_axes = ThreeDAxes(x_range=(-10, 10, 1), y_range=(-10, 10, 1), z_range=(-1, 100_000, 10_000))
+        #tạo trục 3D
+
+        points = list(pd.read_csv("https://bit.ly/2KF29Bd").itertuples()) #data set-> tuple -> list
+        m, b, i, n = symbols('m b i n') # Symbols for slope, intercept, index, and the number of points
+        x, y = symbols('x y', cls=Function) #Symbolic functions
+
+        _sum_of_squares = Sum((m * x(i) + b - y(i)) ** 2, (i, 0, n)) \
+        #Tạo SS giữa các điểm với giá trị predict y(i), lặp từ 1 đến n
+            .subs(n, len(points) - 1).doit() \
+        #thay n = len-1 -> tính sumsquare = doit
+            .replace(x, lambda i: points[i].x) \
+        #thay x bằng x trong point chạy theo vòng
+            .replace(y, lambda i: points[i].y)
+        #thay y = y trong point chạy theo vòng
+
+        sum_of_squares = lambdify([m, b], _sum_of_squares) #biến cái này thành hàm gọi được
+
+        #Taọ tọa độ điểm trên 3d để phục vụ GD
+        def param_loss(u, v):
+            m = u#gắn các giá trị
+            b = v
+            y = sum_of_squares(m, b) #tạo giá trị ss với m, b tương ứng
+            return loss_axes.c2p(m, b, y) #trả về
+        # Create a surface representing the loss function
+        loss_plane = Surface(
+            param_loss,
+            resolution=(42, 42),
+            v_range=[-10, +10],
+            u_range=[-10, +10]
+        )
+        loss_plane.set_style(fill_opacity=.5, stroke_color=BLUE)
+        loss_plane.set_fill(BLUE)
+        # Define the derivative of the sum of squares loss function with respect to m and b
+        d_m = lambdify([m, b], diff(_sum_of_squares, m))
+        d_b = lambdify([m, b], diff(_sum_of_squares, b))
+
+        # Building the model
+        m = -5.0
+        b = 5.0
+        # The learning Rate
+        L = .0025
+
+        # The number of iterations
+        iterations = 1000
+
+        path = VMobject(stroke_color=RED) #group các đường đỏ
+        # Initialize a path to visualize the optimization trajectory
+        dot = Sphere(radius=.05, stroke_color=YELLOW, fill_opacity=.2).move_to(param_loss(m, b))
+        path.set_points_as_corners([dot.get_center(), dot.get_center()]) #set 1 điểm xuất phát, kết thúc
+        #Cập nhật thêm điểm
+        def update_path(path):
+            previous_path = path.copy() #copy path đấy
+            previous_path.add_points_as_corners([dot.get_center()]) #update
+            path.become(previous_path) #đổi path
+        #update ..
+        path.add_updater(update_path)
+
+        path_points = []
+
+        # Perform Gradient Descent
+        for i in range(iterations):
+            # update m and b
+            m -= d_m(m, b) * L
+            b -= d_b(m, b) * L
+            print(m, b)
+            if round(b, 4) == 4.7333 and round(m, 4) == 1.9394:
+                break
+
+            path_points.append((m, b))
+        # m= b=
+        m_b_label = always_redraw(lambda: MathTex("m &= ", round(m, 4),
+                                                  "\\\\b &= ", str(round(b, 4)),
+                                                  font_size=40).move_to(LEFT * 5 + DOWN * 2))
+        #create the graph in up left
+        right_graph = VGroup(loss_plane, path, dot, loss_axes).move_to(RIGHT * 3.6 + UP).scale(.4)
+
+        self.add(right_graph)
+        self.add_fixed_in_frame_mobjects(m_b_label)
+
+        # line graph
+        linear_axes = Axes(x_range=(0, 10, -1), y_range=(0, 26, 2))
+        points = [Dot(point=linear_axes.c2p(p.x, p.y), radius=.25, color=BLUE) for p in points]
+        #line in 2d grph
+        line = Line(start=linear_axes.c2p(b, 0), end=linear_axes.c2p(10, m * 10 + b))
+        #group
+        left_graph = VGroup(linear_axes, line, *points).move_to(LEFT * 3.3 + UP).scale(.4)
+        #thêm nguyên nhóm kia vào biểu đồ
+        self.add_fixed_in_frame_mobjects(left_graph)
+
+        for i, p in enumerate(path_points):
+            m = p[0]
+            b = p[1]
+        #chạy m, b là điểm xuất phát, chạy dot ở 3d để tạo path, chạy đường thẳng ở đồ thị bên trên
+            self.play(
+                dot.animate.move_to(param_loss(p[0], p[1])),
+                Transform(line, Line(start=linear_axes.c2p(10, m * 10 + b), end=linear_axes.c2p(0, b))),
+                run_time=max(.1, 1.0 - (i * .01))
+            )
+
+        self.wait(4)
+
+
+
 def create_train_test_model() -> tuple:
   # Import data from a CSV file
   df = pd.read_csv('https://bit.ly/3TUCgh2', delimiter=",")
@@ -127,6 +239,86 @@ class TrainTestScene(Scene):
         # Animate the transition back to data points from testing split box
         self.play(ReplacementTransform(test_rect_grp, test_points_copy_grp))
         self.wait()
+
+
+class MetricScene(Scene):
+    def construct(self):
+        # Title
+        title = Text("Performance Metrics", color=BLUE).shift(UP * 3 + LEFT * 3)
+        self.play(Create(title))
+        self.wait()
+
+        # R² Score Explanation
+        term0 = MathTex(r"\text{R}^2 \text{ Score}", color=YELLOW)
+        term0desc = MathTex(r"\text{ - Scores the variation predictability of variables between 0 and 1.}").next_to(term0, RIGHT)
+        term0grp = VGroup(term0, term0desc) \
+            .scale(.70) \
+            .next_to(title, DOWN, buff=1) \
+            .align_to(title, LEFT)
+        term00 = MathTex(r"\text{R}^2 \text{ Score} = 1-\frac{SSE}{SST}").next_to(term0, RIGHT, buff=6.5).scale(.70)
+        term000 = MathTex(r"\text{R}^2 \text{ Score} = 1-\frac{\Sigma(y_i-\hat{y}_i)^2}{\Sigma(y_i-\overset{-}{y})^2}").move_to(term00).scale(.70)
+        animations0 = [
+            Create(term0grp),
+            FadeOut(term0desc),
+            Create(term00),
+            ReplacementTransform(term00, term000),
+        ]
+        for animation0 in animations0:
+            self.play(animation0)
+            self.wait()
+
+        # Standard Error of the Estimate Explanation
+        term1 = MathTex(r"\text{Standard Error of the Estimate}", color=YELLOW)
+        term1desc = MathTex(r"\text{ - Measures the overall error of the linear regression.}").next_to(term1, RIGHT)
+        term1grp = VGroup(term1, term1desc) \
+            .scale(.70) \
+            .next_to(term0, DOWN, buff=1) \
+            .align_to(title, LEFT)
+        term01 = MathTex(r"SEE = \sqrt{\frac{\Sigma(x_i-\overset{-}{x})}{n-2}}").next_to(term1, RIGHT).scale(.70).align_to(term000,LEFT)
+        animations1 = [
+            Create(term1grp),
+            FadeOut(term1desc),
+            Create(term01),
+        ]
+        for animation1 in animations1:
+            self.play(animation1)
+            self.wait()
+
+        # Mean Absolute Error Explanation
+        term2 = MathTex(r"\text{Mean Absolute Error}", color=YELLOW)
+        term2desc = MathTex(r"\text{ - Measures the overall absolute error of the linear regression.}").next_to(term2, RIGHT)
+        term2grp = VGroup(term2, term2desc) \
+            .scale(.70) \
+            .next_to(term1, DOWN, buff=1) \
+            .align_to(title, LEFT)
+        term02 = MathTex(r"MAE = \frac{\Sigma\left|\hat{y}_1-y_i\right|}{n}").next_to(term2, RIGHT).scale(.70).align_to(term000,LEFT)
+        animations2 = [
+            Create(term2grp),
+            FadeOut(term2desc),
+            Create(term02),
+        ]
+        for animation2 in animations2:
+            self.play(animation2)
+            self.wait()
+
+        # Mean Squared Error Explanation
+        term3 = MathTex(r"\text{Mean Squared Error}", color=YELLOW)
+        term3desc = MathTex(r"\text{ - Measures the average squared error of the linear regression.}").next_to(term3, RIGHT)
+        term3grp = VGroup(term3, term3desc) \
+            .scale(.70) \
+            .next_to(term2, DOWN, buff=1) \
+            .align_to(title, LEFT)
+        term03 = MathTex(r"MSE = \frac{\Sigma(\hat{y}_i-y_i)^2}{n}").next_to(term3, RIGHT).scale(.70).align_to(term000,LEFT)
+        animations3 = [
+            Create(term3grp),
+            FadeOut(term3desc),
+            Create(term03),
+        ]
+        for animation3 in animations3:
+            self.play(animation3)
+            self.wait()
+
+
 
 def create_problem_model() -> tuple:
     # Read data from the provided CSV URL into a DataFrame
@@ -433,3 +625,33 @@ class FinalExample2(Scene):
         self.play(Write(conclusion_text))
         self.play(Write(con2))
         self.wait()
+
+class TextScene(Scene):
+    def construct(self):
+        credit_text1 = Text("GROUP 6", weight=BOLD, font="Open Sans", font_size=32)
+        credit_text2 = Text("DIRECTED BY", weight=LIGHT, font="Open Sans", font_size=16).next_to(credit_text1, UP, buff=0.1)
+
+        self.play(Create(credit_text1), Create(credit_text2))
+        self.wait(2)
+        self.play(FadeOut(credit_text1), FadeOut(credit_text2))
+
+        # Group 6
+        group_text = [
+            "Nguyễn Phương Hoài Ngọc",
+            "Võ Huyền Khánh Mây",
+            "Võ Thị Minh Phương",
+            "Dương Nhật Thanh",
+            "Trần Phương Linh",
+        ]
+        text_group = VGroup(*[Text(text, weight=BOLD, font="Open Sans", font_size=32).scale(0.7) for text in group_text])
+
+        # Set the initial position of the group at the bottom of the screen
+        text_group.arrange(DOWN).move_to(5.5 * DOWN)
+
+        # Play the animation to write and shift the group of texts
+        self.play(Create(text_group),run_time=0.1)
+        self.play(text_group.animate.shift(12 * UP), run_time=8)
+        # Thanks for watching
+        thanks_text = Text("Thanks for watching",weight=BOLD, font="Open Sans", font_size=32).move_to(5 * DOWN)
+        self.play(Create(thanks_text),run_time=0.2)
+        self.play(thanks_text.animate.shift(5 * UP), run_time=3)
