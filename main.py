@@ -87,7 +87,6 @@ class Leading(Scene):
 #Ngọc 
 class LinearRegressionLoss3D(ThreeDScene):
     def construct(self):
-
         self.set_camera_orientation(phi=70 * DEGREES, theta=-30 * DEGREES)
         #set góc cam cho hình 3D
 
@@ -194,7 +193,6 @@ class LinearRegressionLoss3D(ThreeDScene):
         self.wait(4)
 
 def create_train_test_model() -> tuple:
-
     df = pd.read_csv('https://bit.ly/3TUCgh2', delimiter=",") #data set, cách bằng dấu , pandas đọc file
 
     X = df.values[:, :-1]#nhận từ đầu đến cột t2 từ cuối lên ( theo data là cột 1)
@@ -375,316 +373,370 @@ class MetricScene(Scene):
 
 
 def create_problem_model() -> tuple:
-  # Read data from the provided CSV URL into a DataFrame
-  df = pd.read_csv("https://bit.ly/45VEJfL", delimiter=",")
-  
-  # Extract features (X) and target variable (Y) from the DataFrame
-  X = df.values[:, :-1]  # area
-  Y = df.values[:, -1]  # price
-  
-  # Split the data into training and testing sets (ratio train, test 2: 1)
-  X_train, X_test, Y_train, Y_test = train_test_split(X, Y, test_size=1 / 3, random_state=49)
-  
-  # Create a DataFrame for the training data
-  train_data = pd.DataFrame(data=X_train, columns=df.columns[:-1])
-  train_data['y'] = Y_train
-  train_data = list(train_data.itertuples())  # Convert DataFrame rows to namedtuples (để dễ xử lý data sau này)
-  
-  # Fit a linear regression model to the training data
-  model = LinearRegression().fit(X_train, Y_train)
-  
-  # Use ValueTracker to track the R^2 score of the model on the test set
-  result = ValueTracker(model.score(X_test, Y_test))
-  
-  # Use ValueTrackers to track the slope (m) and intercept (b) of the model
-  m = ValueTracker(model.coef_.flatten()[0])
-  b = ValueTracker(model.intercept_.flatten()[0])
-  
-  # Set up a coordinate system (axes) for the visualization
-  ax = Axes(
-      x_range=[0, 120, 10],
-      y_range=[0, 210, 50],
-      axis_config={"include_tip": True},
-      ).add_coordinates()
-      
-  # Add axis labels to the coordinate system
-  labels = ax.get_axis_labels(
-      MathTex(r"\text{Size of House (m}^2\text{)}").scale(0.7),
-      MathTex(r"\text{Price of House (million VND)}").scale(0.7)
-      )
-  
-  # Create dots representing training and testing data points on the coordinate system
-  train_points = [Dot(point=ax.c2p(p.x, p.y), radius=.15, color=BLUE) for p in
-                  pd.DataFrame(data={'x': X_train.flatten(), 'y': Y_train.flatten()}).itertuples()]
-                  
-  test_points = [Dot(point=ax.c2p(p.x, p.y), radius=.15, color=BLUE) for p in
-                 pd.DataFrame(data={'x': X_test.flatten(), 'y': Y_test.flatten()}).itertuples()]
+    # Read data from the provided CSV URL into a DataFrame
+    df = pd.read_csv("https://bit.ly/45VEJfL", delimiter=",")
 
-  # Create a line representing the linear regression model (và cập nhật line với giá trị m,b -> m,b thay đổi thì line thay đổi theo)
-  line = Line(start=ax.c2p(0, b.get_value()), end=ax.c2p(100, m.get_value() * 100 + b.get_value())).set_color(
-        YELLOW)
-  line.add_updater(
-        lambda l: l.become(
-            Line(start=ax.c2p(0, b.get_value()), end=ax.c2p(100, m.get_value() * 100 + b.get_value()))).set_color(
-            YELLOW)
-            )
-  # Return the generated elements as a tuple
-  return train_data, m, b, ax, train_points, test_points, line, labels, result
+    # Extract features (X) and target variable (Y) from the DataFrame
+    X = df.values[:, :-1]  # area
+    Y = df.values[:, -1]  # price
 
+    # Split the data into training and testing sets (ratio train, test 2: 1)
+    X_train, X_test, Y_train, Y_test = train_test_split(X,
+                                                        Y,
+                                                        test_size=1 / 3,
+                                                        random_state=49)
 
+    # Create a DataFrame for the training data
+    train_data = pd.DataFrame(data=X_train, columns=df.columns[:-1])
+    train_data['y'] = Y_train
+    train_data = list(train_data.itertuples(
+    ))  # Convert DataFrame rows to namedtuples (để dễ xử lý data sau này)
+
+    # Fit a linear regression model to the training data
+    model = LinearRegression().fit(X_train, Y_train)
+
+    # Use ValueTracker to track the R^2 score of the model on the test set
+    result = ValueTracker(model.score(X_test, Y_test))
+
+    # Use ValueTrackers to track the slope (m) and intercept (b) of the model
+    m = ValueTracker(model.coef_.flatten()[0])
+    b = ValueTracker(model.intercept_.flatten()[0])
+
+    # Set up a coordinate system (axes) for the visualization
+    ax = Axes(
+        x_range=[0, 120, 10],
+        y_range=[0, 210, 50],
+        axis_config={
+            "include_tip": True
+        },
+    ).add_coordinates()
+
+    # Add axis labels to the coordinate system
+    labels = ax.get_axis_labels(
+        MathTex(r"\text{Size of House (m}^2\text{)}").scale(0.7),
+        MathTex(r"\text{Price of House (million VND)}").scale(0.7))
+
+    # Create dots representing training and testing data points on the coordinate system
+    train_points = [
+        Dot(point=ax.c2p(p.x, p.y), radius=.15, color=BLUE)
+        for p in pd.DataFrame(data={
+            'x': X_train.flatten(),
+            'y': Y_train.flatten()
+        }).itertuples()
+    ]
+
+    test_points = [
+        Dot(point=ax.c2p(p.x, p.y), radius=.15, color=BLUE)
+        for p in pd.DataFrame(data={
+            'x': X_test.flatten(),
+            'y': Y_test.flatten()
+        }).itertuples()
+    ]
+
+    # Create a line representing the linear regression model (và cập nhật line với giá trị m,b -> m,b thay đổi thì line thay đổi theo)
+    line = Line(start=ax.c2p(0, b.get_value()),
+                end=ax.c2p(100,
+                           m.get_value() * 100 +
+                           b.get_value())).set_color(YELLOW)
+    line.add_updater(lambda l: l.become(
+        Line(start=ax.c2p(0, b.get_value()),
+             end=ax.c2p(100,
+                        m.get_value() * 100 + b.get_value()))).set_color(YELLOW
+                                                                         ))
+    # Return the generated elements as a tuple
+    return train_data, m, b, ax, train_points, test_points, line, labels, result
 
 
 def sse_fit(scene, data, m, b, ax, points, line) -> tuple:
-  # List to store residuals (lines representing the vertical distance between data points and the regression line)
-  residuals: list[Line] = []
-  
-  # Iterate through each data point (data truyền vào ban đầu là train set)
-  for d in data:
-    # Create a residual line for the current data point and animate its appearance
-    residual = Line(start=ax.c2p(d.x, d.y), end=ax.c2p(d.x, m.get_value() * d.x + b.get_value())).set_color(RED)
-    scene.play(Create(residual), run_time=.2)
-    
-    # Add an updater to dynamically adjust the residual line during animation
-    residual.add_updater(lambda r, d=d: r.become(
-        Line(start=ax.c2p(d.x, d.y), end=ax.c2p(d.x, m.get_value() * d.x + b.get_value())).set_color(RED)))
-    residuals += residual  # Add the residual line to the list
+    # List to store residuals (lines representing the vertical distance between data points and the regression line)
+    residuals: list[Line] = []
 
-  # Function to calculate the Sum of Squared Errors (SSE) given current values of slope (m) and intercept (b)
-  def get_sse(m, b):
-    new_sse = ValueTracker(0.0)
-    for i in range(len(residuals)):
-      new_sse += (residuals[i].get_length() ** 2)
-    return new_sse
+    # Iterate through each data point (data truyền vào ban đầu là train set)
+    for d in data:
+        # Create a residual line for the current data point and animate its appearance
+        residual = Line(start=ax.c2p(d.x, d.y),
+                        end=ax.c2p(d.x,
+                                   m.get_value() * d.x +
+                                   b.get_value())).set_color(RED)
+        scene.play(Create(residual), run_time=.2)
 
-  # Return the list of residuals and the SSE calculation function
-  return residuals, get_sse
-    
+        # Add an updater to dynamically adjust the residual line during animation
+        residual.add_updater(lambda r, d=d: r.become(
+            Line(start=ax.c2p(d.x, d.y),
+                 end=ax.c2p(d.x,
+                            m.get_value() * d.x + b.get_value())).set_color(RED
+                                                                            )))
+        residuals += residual  # Add the residual line to the list
+
+    # Function to calculate the Sum of Squared Errors (SSE) given current values of slope (m) and intercept (b)
+    def get_sse(m, b):
+        new_sse = ValueTracker(0.0)
+        for i in range(len(residuals)):
+            new_sse += (residuals[i].get_length()**2)
+        return new_sse
+
+    # Return the list of residuals and the SSE calculation function
+    return residuals, get_sse
+
 
 class TableExamples(Scene):
-  #Cảnh mở đầu ví dụ(câu hỏi và bảng)
-  def construct(self):
-    # Create title and subtitle text objects
-    title = Text("Linear Regression")
-    subTitle = Text("Hanoi Housing Price Problems").set_color_by_gradient(BLUE, GREEN)
-    
-    # Create problem statement text objects
-    problem = Text("Given the historical house selling prices in the table,", font_size=32).to_edge(UP).set_color(YELLOW)
-    problem2 = Text("can you find the optimal price of a 70 m² house?", font_size=32).next_to(problem, DOWN, buff=0.2).set_color(YELLOW)
-    
-    # Adjust title and subtitle positions
-    title.shift(0.5 * UP)
-    subTitle.next_to(title, DOWN)
+    #Cảnh mở đầu ví dụ(câu hỏi và bảng)
+    def construct(self):
+        # Create title and subtitle text objects
+        title = Text("Linear Regression")
+        subTitle = Text("Hanoi Housing Price Problems").set_color_by_gradient(
+            BLUE, GREEN)
 
-    # Animate the appearance and movement of title and subtitle
-    self.play(Write(title), Write(subTitle))
-    self.play(ApplyMethod(title.shift, 3*UP), FadeOut(subTitle), FadeOut(title))
+        # Create problem statement text objects
+        problem = Text(
+            "Given the historical house selling prices in the table,",
+            font_size=32).to_edge(UP).set_color(YELLOW)
+        problem2 = Text("can you find the optimal price of a 70 m² house?",
+                        font_size=32).next_to(problem, DOWN,
+                                              buff=0.2).set_color(YELLOW)
 
-    # Animate the appearance of problem statements with a lagged start
-    self.play(LaggedStart(
-        Write(problem),
-        Write(problem2),
-        lag_ratio=0.4,
-        run_time=3
-    ))
+        # Adjust title and subtitle positions
+        title.shift(0.5 * UP)
+        subTitle.next_to(title, DOWN)
 
-    # Create a historical data table
-    t2 = Table(
-        [["30", "48"],
-        ["40", "62"],
-        ["50", "75"]],
-        col_labels=[Text("Area"), Text("Price")],
-        include_outer_lines=True
-    )
+        # Animate the appearance and movement of title and subtitle
+        self.play(Write(title), Write(subTitle))
+        self.play(ApplyMethod(title.shift, 3 * UP), FadeOut(subTitle),
+                  FadeOut(title))
 
-    # Set colors for column labels in the historical data table
-    lab_2 = t2.get_col_labels()
-    for item in lab_2:
-        item.set_color(YELLOW)
+        # Animate the appearance of problem statements with a lagged start
+        self.play(
+            LaggedStart(Write(problem),
+                        Write(problem2),
+                        lag_ratio=0.4,
+                        run_time=3))
 
-    # Create outline for the historical data table and scale it
-    outline_2 = VGroup(t2.vertical_lines, t2.horizontal_lines)
-    t2.scale(0.5).shift(LEFT*4)
+        # Create a historical data table
+        t2 = Table([["30", "48"], ["40", "62"], ["50", "75"]],
+                   col_labels=[Text("Area"), Text("Price")],
+                   include_outer_lines=True)
 
-    # Create a prediction data table
-    t1 = Table(
-        [["30", "48"],
-        ["40", "62"],
-        ["50", "75"],
-        ["70", "?"],
-        ["120", "?"],
-        ["150", "?"]],
-        col_labels=[Text("Area"), Text("Price")],
-        include_outer_lines=True
-    )
+        # Set colors for column labels in the historical data table
+        lab_2 = t2.get_col_labels()
+        for item in lab_2:
+            item.set_color(YELLOW)
 
-    # Set colors for column labels in the prediction data table
-    lab_1 = t1.get_col_labels()
-    for item in lab_1:
-        item.set_color(YELLOW)
+        # Create outline for the historical data table and scale it
+        outline_2 = VGroup(t2.vertical_lines, t2.horizontal_lines)
+        t2.scale(0.5).shift(LEFT * 4)
 
-    # Create outline for the prediction data table and scale it
-    outline_1 = VGroup(t1.vertical_lines, t1.horizontal_lines)
-    t1.scale(0.5).shift(RIGHT*4)
+        # Create a prediction data table
+        t1 = Table([["30", "48"], ["40", "62"], ["50", "75"], ["70", "?"],
+                    ["120", "?"], ["150", "?"]],
+                   col_labels=[Text("Area"), Text("Price")],
+                   include_outer_lines=True)
 
-    # Get rows from the prediction data table
-    row_1 = t1.get_rows()
-    row1to3 = VGroup(row_1[1], row_1[2], row_1[3])
-    rowlast = VGroup(row_1[4], row_1[5], row_1[6])
+        # Set colors for column labels in the prediction data table
+        lab_1 = t1.get_col_labels()
+        for item in lab_1:
+            item.set_color(YELLOW)
 
-    # Set color for the last row in the prediction data table
-    rowlast.set_color(BLUE)
+        # Create outline for the prediction data table and scale it
+        outline_1 = VGroup(t1.vertical_lines, t1.horizontal_lines)
+        t1.scale(0.5).shift(RIGHT * 4)
 
-    # Define mathematical equations for linear regression
-    eq1 = MathTex("Area", "=?.Price+?").next_to(t1, DOWN, buff=1)
-    eq2 = MathTex(r"y", r"= \beta_1", "x", r"+ \beta_0").next_to(t1, DOWN, buff=1)
-    eq3 = MathTex("y", "=", "mx", "+", "b").next_to(t1, DOWN, buff=1)
+        # Get rows from the prediction data table
+        row_1 = t1.get_rows()
+        row1to3 = VGroup(row_1[1], row_1[2], row_1[3])
+        rowlast = VGroup(row_1[4], row_1[5], row_1[6])
 
-    # Create a framebox around the first equation
-    framebox1 = SurroundingRectangle(eq1)
+        # Set color for the last row in the prediction data table
+        rowlast.set_color(BLUE)
 
-    # Create arrows to represent the flow of information
-    arrow_1 = Arrow(start=t2.get_right(), end=t1.get_left()).set_angle(0.2)
-    arrow_2 = Arrow(start=t2.get_right(), end=t1.get_left(), color=BLUE).set_angle(-0.2)
-    arrow_3 = Arrow(start=t1.get_bottom(), end=framebox1.get_top(), color=YELLOW).scale(1.5)
+        # Define mathematical equations for linear regression
+        eq1 = MathTex("Area", "=?.Price+?").next_to(t1, DOWN, buff=1)
+        eq2 = MathTex(r"y", r"= \beta_1", "x", r"+ \beta_0").next_to(t1,
+                                                                     DOWN,
+                                                                     buff=1)
+        eq3 = MathTex("y", "=", "mx", "+", "b").next_to(t1, DOWN, buff=1)
 
-    # Create braces with accompanying text for historical data and prediction
-    b1 = Brace(arrow_1, direction=arrow_1.copy().rotate(PI / 2).get_unit_vector())
-    b1text = b1.get_tex(r"\text{Historical data}").scale(0.7)
-    b2 = Brace(arrow_2, direction=arrow_2.copy().rotate(-PI / 2).get_unit_vector(), color=BLUE)
-    b2text = b2.get_tex(r"\text{Prediction}").scale(0.7)
-    b1_comb = VGroup(b1, b1text)
-    b2_comb = VGroup(b2, b2text)
+        # Create a framebox around the first equation
+        framebox1 = SurroundingRectangle(eq1)
 
-    # Animate the creation of outline, column labels, and arrows for the historical data table
-    self.play(Create(outline_2))
-    self.play(Write(t2.get_columns()[0]))
-    self.wait()
-    self.play(Write(t2.get_columns()[1]))
-    self.wait()
+        # Create arrows to represent the flow of information
+        arrow_1 = Arrow(start=t2.get_right(), end=t1.get_left()).set_angle(0.2)
+        arrow_2 = Arrow(start=t2.get_right(), end=t1.get_left(),
+                        color=BLUE).set_angle(-0.2)
+        arrow_3 = Arrow(start=t1.get_bottom(),
+                        end=framebox1.get_top(),
+                        color=YELLOW).scale(1.5)
 
-    # Animate the creation of outline, column labels, arrows, and braces for the prediction data table
-    self.play(Create(outline_1))
-    self.play(Write(t1.get_labels()))
-    self.play(LaggedStart(Create(arrow_1), Create(b1_comb)))
-    self.play(Write(row1to3))
-    self.wait(1)
-    self.play(LaggedStart(Create(arrow_2), Create(b2_comb)))
-    self.play(Write(rowlast))
-    self.play(Create(arrow_3))
-    self.wait()
+        # Create braces with accompanying text for historical data and prediction
+        b1 = Brace(arrow_1,
+                   direction=arrow_1.copy().rotate(PI / 2).get_unit_vector())
+        b1text = b1.get_tex(r"\text{Historical data}").scale(0.7)
+        b2 = Brace(arrow_2,
+                   direction=arrow_2.copy().rotate(-PI / 2).get_unit_vector(),
+                   color=BLUE)
+        b2text = b2.get_tex(r"\text{Prediction}").scale(0.7)
+        b1_comb = VGroup(b1, b1text)
+        b2_comb = VGroup(b2, b2text)
 
-    # Animate the appearance of the first equation with a framebox
-    self.play(FadeIn(eq1), Create(framebox1))
-    self.wait(1)
+        # Animate the creation of outline, column labels, and arrows for the historical data table
+        self.play(Create(outline_2))
+        self.play(Write(t2.get_columns()[0]))
+        self.wait()
+        self.play(Write(t2.get_columns()[1]))
+        self.wait()
 
-    # Animate the transition between equations
-    self.play(ReplacementTransform(eq1, eq2))
-    self.wait(1)
-    self.play(ReplacementTransform(eq2, eq3))
-    self.wait()
+        # Animate the creation of outline, column labels, arrows, and braces for the prediction data table
+        self.play(Create(outline_1))
+        self.play(Write(t1.get_labels()))
+        self.play(LaggedStart(Create(arrow_1), Create(b1_comb)))
+        self.play(Write(row1to3))
+        self.wait(1)
+        self.play(LaggedStart(Create(arrow_2), Create(b2_comb)))
+        self.play(Write(rowlast))
+        self.play(Create(arrow_3))
+        self.wait()
+
+        # Animate the appearance of the first equation with a framebox
+        self.play(FadeIn(eq1), Create(framebox1))
+        self.wait(1)
+
+        # Animate the transition between equations
+        self.play(ReplacementTransform(eq1, eq2))
+        self.wait(1)
+        self.play(ReplacementTransform(eq2, eq3))
+        self.wait()
+
 
 class FitScene2(Scene):
-  def construct(self):
-    # Create a linear regression problem and obtain necessary elements từ hàm đã tạo
-    train_data, m, b, ax, train_points, test_points, line_f, labels, result = create_problem_model()
-    
-    ## Show dataset (both data + train)
-    train_group = VGroup(*train_points)
-    test_group = VGroup(*test_points)
-    self.play(Create(ax), Write(labels))
-    self.play(Create(train_group), Create(test_group))
-    self.wait()
+    def construct(self):
+        # Create a linear regression problem and obtain necessary elements từ hàm đã tạo
+        train_data, m, b, ax, train_points, test_points, line_f, labels, result = create_problem_model(
+        )
 
-    # Split the dataset into training and testing sets
-    self.play(*[p.animate.set_fill(RED) for p in test_points])
-    self.wait()
-    self.play(FadeOut(test_group))
-    self.wait()
-    
-    # Visualize the initial linear regression model (bad fit)
-    m_1 = ValueTracker(0)
-    b_1 = ValueTracker(100)
-    SSE_of_best_func = ValueTracker(12.781)
-    eq1 = always_redraw(lambda : MathTex(f"y = {m_1.get_value():.3f}", r"x + ", f"{b_1.get_value():.3f}").move_to((LEFT*3 + UP*2.5)))
-    line_1 = Line(start=ax.c2p(0, b_1.get_value()), end=ax.c2p(100, m_1.get_value() * 100 + b_1.get_value())).set_color(YELLOW)
-    line_1.add_updater(
-        lambda l: l.become(
-            Line(start=ax.c2p(0, b_1.get_value()), end=ax.c2p(100, m_1.get_value() * 100 + b_1.get_value()))).set_color(YELLOW)
-    )
-    sse_text_1 = MathTex("SSE = ").next_to(eq1,DOWN,buff=0.3)
-    
-    # Animate the creation of the initial model (best) and SSE visualization
-    self.play(Create(line_1))
-    self.play(Create(eq1),Write(sse_text_1))
-    residuals_b, get_sse = sse_fit(self, train_data, m_1, b_1, ax, train_points, line_1)
-    sse_1 =  get_sse(m_1, b_1)
-    sse_text_2 = always_redraw(lambda : MathTex("SSE = ",f'{sse_1.get_value():.3f}').next_to(eq1,DOWN,buff=0.3))
-    self.play(ReplacementTransform(sse_text_1, sse_text_2))
-    self.wait(2)
-    
-    # Optimize the model to the best fit. Khi line chuyển từ các hệ số của bad fit -> best fit.
-    self.play(m_1.animate.set_value(m.get_value()), b_1.animate.set_value(b.get_value()), sse_1.animate.set_value(SSE_of_best_func.get_value()), run_time=3, rate_func=linear)
-    self.wait(2)
+        ## Show dataset (both data + train)
+        train_group = VGroup(*train_points)
+        test_group = VGroup(*test_points)
+        self.play(Create(ax), Write(labels))
+        self.play(Create(train_group), Create(test_group))
+        self.wait()
+
+        # Split the dataset into training and testing sets
+        self.play(*[p.animate.set_fill(RED) for p in test_points])
+        self.wait()
+        self.play(FadeOut(test_group))
+        self.wait()
+
+        # Visualize the initial linear regression model (bad fit)
+        m_1 = ValueTracker(0)
+        b_1 = ValueTracker(100)
+        SSE_of_best_func = ValueTracker(12.781)
+        eq1 = always_redraw(lambda: MathTex(f"y = {m_1.get_value():.3f}",
+                                            r"x + ", f"{b_1.get_value():.3f}").
+                            move_to((LEFT * 3 + UP * 2.5)))
+        line_1 = Line(start=ax.c2p(0, b_1.get_value()),
+                      end=ax.c2p(100,
+                                 m_1.get_value() * 100 +
+                                 b_1.get_value())).set_color(YELLOW)
+        line_1.add_updater(lambda l: l.become(
+            Line(start=ax.c2p(0, b_1.get_value()),
+                 end=ax.c2p(100,
+                            m_1.get_value() * 100 + b_1.get_value()))).
+                           set_color(YELLOW))
+        sse_text_1 = MathTex("SSE = ").next_to(eq1, DOWN, buff=0.3)
+
+        # Animate the creation of the initial model (best) and SSE visualization
+        self.play(Create(line_1))
+        self.play(Create(eq1), Write(sse_text_1))
+        residuals_b, get_sse = sse_fit(self, train_data, m_1, b_1, ax,
+                                       train_points, line_1)
+        sse_1 = get_sse(m_1, b_1)
+        sse_text_2 = always_redraw(lambda: MathTex(
+            "SSE = ", f'{sse_1.get_value():.3f}').next_to(eq1, DOWN, buff=0.3))
+        self.play(ReplacementTransform(sse_text_1, sse_text_2))
+        self.wait(2)
+
+        # Optimize the model to the best fit. Khi line chuyển từ các hệ số của bad fit -> best fit.
+        self.play(m_1.animate.set_value(m.get_value()),
+                  b_1.animate.set_value(b.get_value()),
+                  sse_1.animate.set_value(SSE_of_best_func.get_value()),
+                  run_time=3,
+                  rate_func=linear)
+        self.wait(2)
 
 
 class FinalExample2(Scene):
-  def construct(self):
-    # Create a linear regression problem and obtain necessary elements
-    data, m, b, ax, train_points, test_points, line_f, labels, result = create_problem_model()
-    train_group = VGroup(*train_points)
-    test_group = VGroup(*test_points)
-    
-    # Display the training and testing data points, along with the initial linear regression model
-    eq1 = MathTex(f"y = {m.get_value():.3f}", r"x + ", f"{b.get_value():.3f}").move_to(LEFT*2.5 + UP*2.3)
-    r2_score = MathTex("R^2 \\text{ Score: }", f"{result.get_value():.3f}").next_to(eq1, DOWN, buff=0.5).align_to(eq1, LEFT)
-    r2_score[1].set_color(RED)
-    test_group.set_color(RED)
+    def construct(self):
+        # Create a linear regression problem and obtain necessary elements
+        data, m, b, ax, train_points, test_points, line_f, labels, result = create_problem_model(
+        )
+        train_group = VGroup(*train_points)
+        test_group = VGroup(*test_points)
 
-    # Prediction visualization for a 70 m² house
-    point = ax.coords_to_point(70, m.get_value()*70+b.get_value())
-    u_point = ax.c2p(0, m.get_value()*70+b.get_value())
-    price_y = MathTex(f"{m.get_value()*70+b.get_value():.0f}").next_to(u_point, LEFT, buff=0.3).set_color(RED)
-    dot = Dot(point)
-    ver_line = ax.get_vertical_line(point, line_config={"dashed_ratio": 0.85})
-    hori_line = ax.get_horizontal_line(point, line_config={"dashed_ratio": 0.85})
+        # Display the training and testing data points, along with the initial linear regression model
+        eq1 = MathTex(f"y = {m.get_value():.3f}", r"x + ",
+                      f"{b.get_value():.3f}").move_to(LEFT * 2.5 + UP * 2.3)
+        r2_score = MathTex("R^2 \\text{ Score: }",
+                           f"{result.get_value():.3f}").next_to(
+                               eq1, DOWN, buff=0.5).align_to(eq1, LEFT)
+        r2_score[1].set_color(RED)
+        test_group.set_color(RED)
 
-    # Play the scene with animations
-    self.play(Create(ax), Create(train_group), run_time=1)
-    self.play(Write(labels))
-    self.wait()
-    self.play(Write(eq1))  # Display the best model equation
-    self.play(Create(line_f), run_time=1)
-    self.play(FadeOut(train_group))
-    self.play(FadeIn(test_group))
-    self.wait()
+        # Prediction visualization for a 70 m² house
+        point = ax.coords_to_point(70, m.get_value() * 70 + b.get_value())
+        u_point = ax.c2p(0, m.get_value() * 70 + b.get_value())
+        price_y = MathTex(f"{m.get_value()*70+b.get_value():.0f}").next_to(
+            u_point, LEFT, buff=0.3).set_color(RED)
+        dot = Dot(point)
+        ver_line = ax.get_vertical_line(point,
+                                        line_config={"dashed_ratio": 0.85})
+        hori_line = ax.get_horizontal_line(point,
+                                           line_config={"dashed_ratio": 0.85})
 
-    # Display the R^2 score
-    self.play(Write(r2_score))
+        # Play the scene with animations
+        self.play(Create(ax), Create(train_group), run_time=1)
+        self.play(Write(labels))
+        self.wait()
+        self.play(Write(eq1))  # Display the best model equation
+        self.play(Create(line_f), run_time=1)
+        self.play(FadeOut(train_group))
+        self.play(FadeIn(test_group))
+        self.wait()
 
-    # Predict and visualize the price of a 70 m² house
-    self.play(Create(hori_line), run_time=2)
-    self.play(FadeIn(dot), Create(ver_line))
-    self.wait(1)
-    self.play(FadeIn(price_y))
-    self.wait()
+        # Display the R^2 score
+        self.play(Write(r2_score))
 
-    # Create a left panel containing relevant elements and scale it for better visibility
-    left_panel = VGroup(ax, train_group, labels, eq1, line_f, test_group, r2_score, hori_line, dot, ver_line, price_y).scale_to_fit_height(5)
+        # Predict and visualize the price of a 70 m² house
+        self.play(Create(hori_line), run_time=2)
+        self.play(FadeIn(dot), Create(ver_line))
+        self.wait(1)
+        self.play(FadeIn(price_y))
+        self.wait()
 
-    # Display conclusion text
-    conclusion_text = Text("Conclusion: The optimal price of a 70 m² house in Hanoi,").scale(0.5).to_edge(UP)
-    con2 = Text("based on our Linear Regression model is 127 million VND.").scale(0.5).next_to(conclusion_text, DOWN, buff=0.3)
-    self.play(
-        left_panel.animate.to_edge(LEFT).to_edge(DOWN), run_time=4
-    )
-    self.play(Write(conclusion_text))
-    self.play(Write(con2))
-    self.wait()
+        # Create a left panel containing relevant elements and scale it for better visibility
+        left_panel = VGroup(ax, train_group, labels, eq1, line_f, test_group,
+                            r2_score, hori_line, dot, ver_line,
+                            price_y).scale_to_fit_height(5)
+
+        # Display conclusion text
+        conclusion_text = Text(
+            "Conclusion: The optimal price of a 70 m² house in Hanoi,").scale(
+                0.5).to_edge(UP)
+        con2 = Text("based on our Linear Regression model is 127 million VND."
+                    ).scale(0.5).next_to(conclusion_text, DOWN, buff=0.3)
+        self.play(left_panel.animate.to_edge(LEFT).to_edge(DOWN), run_time=4)
+        self.play(Write(conclusion_text))
+        self.play(Write(con2))
+        self.wait()
 
 class TextScene(Scene):
     def construct(self):
-        credit_text1 = Text("GROUP 6", weight=BOLD, font="Open Sans", font_size=32)
-        credit_text2 = Text("DIRECTED BY", weight=LIGHT, font="Open Sans", font_size=16).next_to(credit_text1, UP, buff=0.1)
+        credit_text1 = Text("GROUP 6",
+                            weight=BOLD,
+                            font="Open Sans",
+                            font_size=32)
+        credit_text2 = Text("DIRECTED BY",
+                            weight=LIGHT,
+                            font="Open Sans",
+                            font_size=16).next_to(credit_text1, UP, buff=0.1)
 
         self.play(Create(credit_text1), Create(credit_text2))
         self.wait(2)
@@ -698,15 +750,21 @@ class TextScene(Scene):
             "Dương Nhật Thanh",
             "Trần Phương Linh",
         ]
-        text_group = VGroup(*[Text(text, weight=BOLD, font="Open Sans", font_size=32).scale(0.7) for text in group_text])
+        text_group = VGroup(*[
+            Text(text, weight=BOLD, font="Open Sans", font_size=32).scale(0.7)
+            for text in group_text
+        ])
 
         # Set the initial position of the group at the bottom of the screen
         text_group.arrange(DOWN).move_to(5.5 * DOWN)
 
         # Play the animation to write and shift the group of texts
-        self.play(Create(text_group),run_time=0.1)
+        self.play(Create(text_group), run_time=0.1)
         self.play(text_group.animate.shift(12 * UP), run_time=8)
         # Thanks for watching
-        thanks_text = Text("Thanks for watching",weight=BOLD, font="Open Sans", font_size=32).move_to(5 * DOWN)
-        self.play(Create(thanks_text),run_time=0.2)
+        thanks_text = Text("Thanks for watching",
+                           weight=BOLD,
+                           font="Open Sans",
+                           font_size=32).move_to(5 * DOWN)
+        self.play(Create(thanks_text), run_time=0.2)
         self.play(thanks_text.animate.shift(5 * UP), run_time=3)
