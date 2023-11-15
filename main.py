@@ -168,7 +168,6 @@ def create_train_test_model() -> tuple:
   return m, b, ax, train_points, test_points, line
 
 class TrainTestScene(Scene):
-
     def construct(self):
         # Create linear regression model and visual elements
         m, b, ax, train_points, test_points, line = create_train_test_model()
