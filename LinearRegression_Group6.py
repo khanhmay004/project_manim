@@ -301,7 +301,7 @@ class OptimalModelScene(Scene):
     def construct(self):
         cont1 = Text("How to find the most optimal model?", font_size=40)
         cont2 = Text("Find m, b values to minimize Loss Function", font_size=40)
-        cont3 = Text("Gradient Descent",font_size=40)
+        cont3 = Text("Gradient Descent",font_size=40).set_color_by_gradient(RED, ORANGE)
         # Display the title
         self.play(Write(cont1), run_time=2)
         self.wait()
