@@ -9,7 +9,6 @@ from sklearn.metrics import mean_squared_error
 from sklearn import datasets, linear_model
 
 #Ngọc 
-
 class LinearRegressionLoss3D(ThreeDScene):
     def construct(self):
 
@@ -167,9 +166,10 @@ def create_train_test_model() -> tuple:
   # Return the ValueTrackers for m and b, coordinate axes, and visual elements for training, testing points, and the line
   return m, b, ax, train_points, test_points, line
 
+
 class TrainTestScene(Scene):
     def construct(self):
-        # Create linear regression model and visual elements
+         # Create linear regression model and visual elements
         m, b, ax, train_points, test_points, line = create_train_test_model()
 
         # Group training and testing points for easy manipulation
