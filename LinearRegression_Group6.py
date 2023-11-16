@@ -223,8 +223,8 @@ def create_residual_model(scene,data,m,b,ax,points,line) -> tuple: # tạo phép
     residuals: list[Line] = [] #tạo list
     for d in data:
         residual = Line(start=ax.c2p(d.x, d.y),
-                        end=ax.c2p(d.x, m.get_value() * d.x + b.get_value())).set_color(RED) #từ các điểm dot đến đường thẳngscene.play(Create(residual), run_time=.3)
-
+                        end=ax.c2p(d.x, m.get_value() * d.x + b.get_value())).set_color(RED) #từ các điểm dot đến đường thẳng
+        scene.play(Create(residual), run_time=.3)
         residual.add_updater( # cập nhật residuals khi m và b thay đổi
             lambda r,d=d:
                   r.become(Line(start=ax.c2p(d.x, d.y), end=ax.c2p(d.x, m.get_value()*d.x+b.get_value())).set_color(RED)))
@@ -242,6 +242,8 @@ def create_residual_model(scene,data,m,b,ax,points,line) -> tuple: # tạo phép
             scene.wait()
 
     return residuals, flex_residuals
+
+
 
 class ThirdScene(Scene):
 
