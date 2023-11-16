@@ -219,6 +219,7 @@ class FirstScene(Scene):
         # remove equation
         self.play(FadeOut(eq7, shift=DOWN))
         
+
 def create_residual_model(scene,data,m,b,ax,points,line) -> tuple: # tạo phép tính phần thừa residuals
     residuals: list[Line] = [] #tạo list
     for d in data:
@@ -237,9 +238,9 @@ def create_residual_model(scene,data,m,b,ax,points,line) -> tuple: # tạo phép
         for i in (-1,1,-1,1): #tăng giảm giá trị m
             scene.play(m.animate.increment_value(i*m_delta))
             scene.play(m.animate.increment_value(i*m_delta))
-            scene.play(m.animate.increment_value(-m_delta))
+        scene.play(m.animate.increment_value(-m_delta))
             
-            scene.wait()
+        scene.wait()
 
     return residuals, flex_residuals
 
