@@ -16,30 +16,39 @@ from sklearn import datasets, linear_model
 
 #Linh
 class OpeningText(Scene):
-    
     def construct(self):
-        intro_words = Text("Visualizing Linear Regression").set_color_by_gradient(BLUE,GREEN)# tạo tiêu đề bài làm
-        content1 = Text("1. Linear Regression model")
-        content2 = Text("2. Loss Function")
-        content3 = Text("3. Training/ Testing Process")
-        content4 = Text("4. Solve An Appilcation Example")
-        self.play(Write(intro_words.scale(1)))
-        self.wait(2)
+      """Phần này của mình là làm tiêu đề dẫn vào bài thì mình cần ghi tiêu đề gì thì mình cho vào Text("")
+      xong đặt từng phần ra thành từng biến riêng với tên theo thứ tự. Mình ghi hết ra rồi mới cho chạy animation.
+       """
 
-        self.play(intro_words.animate.to_edge(UP))
-        self.wait(2)
+      intro_words = Text("Linear Regression").set_color_by_gradient(BLUE,GREEN)# tạo tiêu đề bài làm
+      introduction = Text("DSEB64A - Group 6").scale(1).set_color_by_gradient(BLUE,GREEN)
 
-        self.play(Create(content1.scale(0.6).to_edge(UL, buff= 1.75)))
-        self.wait(2)
+      content1 = Text("1. Linear Regression model")
+      content2 = Text("2. Loss Function")
+      content3 = Text("3. Training/ Testing Process")
+      content4 = Text("4. Solve An Appilcation Example")
 
-        self.play(Create(content2.scale(0.6).to_edge(UL, buff= 2.75).shift(LEFT*1)))
-        self.wait(2)
+      self.play(Write(intro_words.scale(1)))
+      self.play(Write(introduction.next_to(intro_words,DOWN)))
+      self.wait(3)
 
-        self.play(Create(content3.scale(0.6).to_edge(UL, buff = 3.75).shift(LEFT*2)))
-        self.wait(2)
 
-        self.play(Create(content4.scale(0.6).to_edge(DL, buff = 2.95).shift(LEFT*1.25)))
-        self.wait(2)
+      self.play(intro_words.animate.to_edge(UP))
+      self.remove(introduction)
+      self.wait(2)
+
+      self.play(Create(content1.scale(0.6).to_edge(UL, buff= 1.75)))
+      self.wait(2)
+
+      self.play(Create(content2.scale(0.6).to_edge(UL, buff= 2.75).shift(LEFT*1)))
+      self.wait(2)
+
+      self.play(Create(content3.scale(0.6).to_edge(UL, buff = 3.75).shift(LEFT*2)))
+      self.wait(2)
+
+      self.play(Create(content4.scale(0.6).to_edge(DL, buff = 2.95).shift(LEFT*1.25)))
+      self.wait(2)
 
 class Leading(Scene):
     
